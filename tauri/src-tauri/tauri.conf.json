@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Valyze",
+  "version": "0.1.0",
+  "identifier": "io.valyze.desktop",
+  "build": {
+    "frontendDist": "../../frontend/dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "pnpm -C ../frontend dev",
+    "beforeBuildCommand": "pnpm -C ../frontend build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Valyze",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "dragDropEnabled": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/icon.png"]
+  }
+}

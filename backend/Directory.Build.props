@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- NU1903 = transitive package with known vulnerability. Kept as warning so builds don't break
+         when upstream fixes lag, but stays visible in build output. Review during dep bumps. -->
+    <WarningsNotAsErrors>NU1903</WarningsNotAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <!--
+      Suppressed analyzer rules:
+      CA1716 — namespace 'Enum' clashes with VB.NET/F# keyword. Mirrors Oregon.ControlLaboral.AI
+               naming on purpose.
+      CA1848 — pushes LoggerMessage source generators for every log call. Boilerplate cost
+               outweighs micro-perf gain at Valyze's scale; revisit if logging shows up in profiles.
+      CA1873 — paired with CA1848; would force IsEnabled() guards on every logger call. Same
+               trade-off as CA1848.
+    -->
+    <!--
+      CA1861 — EF Core's generated migrations pass inline `new[] { ... }` arguments;
+               can't be refactored without forking the migration scaffolder.
+      CA1859 — pushes concrete collection types over interfaces in private/internal scopes
+               for trivial perf gain; not worth losing readability.
+    -->
+    <NoWarn>$(NoWarn);CA1716;CA1848;CA1873;CA1861;CA1859</NoWarn>
+  </PropertyGroup>
+</Project>

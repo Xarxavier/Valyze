@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: valyze-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: valyze
+      POSTGRES_USER: valyze
+      POSTGRES_PASSWORD: valyze
+    ports:
+      - "5432:5432"
+    volumes:
+      - valyze-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U valyze -d valyze"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  valyze-pgdata:
