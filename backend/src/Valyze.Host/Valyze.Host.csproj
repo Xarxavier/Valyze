@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Valyze.Host</RootNamespace>
+    <UserSecretsId>valyze-host-78c4dd0c</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Valyze.Application\Valyze.Application.csproj" />
+    <ProjectReference Include="..\Valyze.Infraestructure.EntityFramework\Valyze.Infraestructure.EntityFramework.csproj" />
+    <ProjectReference Include="..\Valyze.Infraestructure.Repository\Valyze.Infraestructure.Repository.csproj" />
+    <ProjectReference Include="..\Valyze.Infraestructure.QueryService\Valyze.Infraestructure.QueryService.csproj" />
+    <ProjectReference Include="..\Valyze.Infraestructure.Brokers.TradeRepublic\Valyze.Infraestructure.Brokers.TradeRepublic.csproj" />
+    <ProjectReference Include="..\Valyze.Infraestructure.MarketData.CoinGecko\Valyze.Infraestructure.MarketData.CoinGecko.csproj" />
+    <ProjectReference Include="..\Valyze.Infraestructure.MarketData.Yahoo\Valyze.Infraestructure.MarketData.Yahoo.csproj" />
+    <ProjectReference Include="..\Valyze.Infraestructure.MarketData.Ecb\Valyze.Infraestructure.MarketData.Ecb.csproj" />
+    <ProjectReference Include="..\Valyze.Infraestructure.News.Rss\Valyze.Infraestructure.News.Rss.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+  </ItemGroup>
+</Project>
