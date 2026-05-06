@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Valyze.Domain.Application.MarketData;
+using Valyze.Domain.Instruments;
 using Valyze.Domain.Money;
 using Valyze.Infraestructure.MarketData.Yahoo.Internal;
 using MoneyValue = Valyze.Domain.Money.Money;
@@ -49,6 +50,11 @@ public sealed class YahooFinancePriceFeed : IPriceFeed
 
         foreach (var symbol in symbols)
         {
+            // Crypto tickers are owned by the dedicated crypto feed. Yahoo will
+            // happily answer for "BTC" with a tiny ~$36 fund that happens to use
+            // that ticker — which would silently poison the cache. Refuse here.
+            if (CryptoCatalog.IsCrypto(symbol)) continue;
+
             // Resolve symbol → ordered list of candidate Yahoo tickers.
             // ISINs go through OpenFIGI (returns multiple exchange listings);
             // anything else is treated as already a ticker.
