@@ -109,28 +109,40 @@ export function Positions({ reloadKey }: Props) {
   useEffect(() => {
     if (!token) return;
     let cancelled = false;
-    setLoading(true);
-    api
-      .getPositions(token)
-      .then((data) => {
-        if (!cancelled) {
+
+    const fetchPositions = (isBackground: boolean) => {
+      if (!isBackground) setLoading(true);
+      api
+        .getPositions(token)
+        .then((data) => {
+          if (cancelled) return;
           setView(data);
           setError(null);
-        }
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        if (err instanceof ApiException) {
-          setError(`${err.code}${err.detail ? ` — ${err.detail}` : ""}`);
-        } else {
-          setError(err instanceof Error ? err.message : "Unexpected error");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+        })
+        .catch((err: unknown) => {
+          if (cancelled) return;
+          // Background refresh failures keep the stale view instead of blanking it.
+          if (isBackground) return;
+          if (err instanceof ApiException) {
+            setError(`${err.code}${err.detail ? ` — ${err.detail}` : ""}`);
+          } else {
+            setError(err instanceof Error ? err.message : "Unexpected error");
+          }
+        })
+        .finally(() => {
+          if (!cancelled && !isBackground) setLoading(false);
+        });
+    };
+
+    fetchPositions(false);
+
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") fetchPositions(true);
+    }, 10_000);
+
     return () => {
       cancelled = true;
+      window.clearInterval(interval);
     };
   }, [token, reloadKey]);
 
