@@ -1,0 +1,72 @@
+schema: spec-driven
+
+context: |
+  Tech stack: .NET 10 backend (Clean Architecture + CQRS-light: EF Core writes, Dapper reads),
+  Postgres 17, Tauri 2 (Rust shell), React 19 + Vite 6 + TypeScript frontend, MCP server
+  (Valyze.Mcp) bridging local Claude Code CLI to the API.
+  Architecture: Domain owns ALL contracts (use cases, repositories, query services, entities).
+  Naming: {Name}Entity, I{Action}UseCase, I{Aggregate}Repository, I{Domain}QueryService.
+  Multi-tenancy by AccountId enforced at repository + AccountGuard at query layer.
+  Money is a VO (decimal + ISO 4217 currency); ISIN is the primary instrument key.
+  Testing: xUnit + Shouldly in backend/tests/ (Valyze.Domain.Tests). No frontend or Tauri tests yet.
+  Style: Spanish "Infraestructure" spelling intentional. English code/identifiers, conventional commits.
+
+strict_tdd: true
+
+testing:
+  test_runner:
+    command: "dotnet test"
+    framework: "xUnit + Shouldly"
+  layers:
+    unit:
+      available: true
+      tool: "xUnit"
+    integration:
+      available: false
+      tool: null
+    e2e:
+      available: false
+      tool: null
+  coverage:
+    available: false
+    command: null
+  quality:
+    linter:
+      available: false
+      command: null
+    type_checker:
+      available: true
+      command: "tsc -b --noEmit (frontend); dotnet build (backend)"
+    formatter:
+      available: false
+      command: null
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes (schema, secrets, multi-tenant boundaries)
+    - Identify affected projects in the .NET solution + frontend + tauri shell
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Money fields in scenarios MUST state currency explicitly
+  design:
+    - Document architecture decisions with rationale
+    - Respect strict dependency direction Host -> Application -> Domain
+    - New write-side ports go in Domain/Repository; new read-side ports in Domain/QueryService
+    - Multi-tenancy: every user-owned entity carries AccountId; reads validate via AccountGuard
+  tasks:
+    - Group tasks by phase (infrastructure, domain, application, host, mcp, frontend, tauri, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    - Match naming: {Name}Entity, I{Action}UseCase, {Action}UseCase, etc.
+    - Use Money VO and ISO 4217 currency strings — never bare decimal for money
+    - Use numeric(28,8) for money columns in EF configurations
+    - Conventional commits, no Co-Authored-By or AI attribution
+  verify:
+    - Run dotnet test and dotnet build before reporting done
+    - Compare implementation against every spec scenario
+    - Verify multi-tenant isolation (AccountId filter on repos + AccountGuard on queries)
+  archive:
+    - Warn before merging destructive deltas (large removals or schema drops)
