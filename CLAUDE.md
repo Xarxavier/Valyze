@@ -129,6 +129,33 @@ This is the analytic Trade Republic fails at and is Valyze's core differentiator
 
 **7. Domain anemic, behavior in use cases.** Following Oregon: domain entities are POCOs (records-like classes with public getters/setters). Validation, invariants, and orchestration live in use cases. Money / Currency / Isin remain rich VOs because their invariants are about the value itself, not about workflow.
 
+## Decision Tracking
+
+`investment_decisions` records user-stated investment intentions so the AI
+can close the loop between advice and outcome. Decisions are never inferred
+— the assistant MUST confirm the `source` dimension with the user before
+calling `record_decision`.
+
+**`source` dimension (5 values, non-negotiable):**
+- `AI_SUGGESTION` — the user acted on something the AI proposed this session.
+- `OWN_RESEARCH` — the user did their own analysis before chatting.
+- `NEWS_EVENT` — a specific headline or announcement triggered the move.
+- `REBALANCE` — mechanical portfolio rebalancing, no particular thesis.
+- `OTHER` — everything else; requires a free-text `source_other_note`.
+
+**`action` enum:** `BUY`, `SELL`, `HOLD`, `REBALANCE`.
+
+**Trade link flow:** decisions are recorded at intention time (before the PDF
+import). After the user imports a PDF, they call `link_decision_to_trade` to
+bind the decision row to the real `Trade` row by ID. The link is manual;
+automatic matching is out of scope for v1.
+
+**Evaluation model:** on-demand (no scheduler). The AI calls `evaluate_decision`
+which fetches the current price from `price_quotes`, computes return %,
+and classifies status as `ACHIEVED`, `FAILED`, or `PENDING_HORIZON`. Default
+horizons (configurable via `appsettings.json → Decisions:Evaluation`):
+BUY/SELL = 90 days, HOLD = 180 days, REBALANCE = 30 days.
+
 ## Data Ingestion
 
 V1 ingestion is **PDF import from Trade Republic**:
@@ -184,17 +211,23 @@ one-row insert.
 The Valyze MCP server exposes the news tools so the assistant can both *read*
 and *curate* the feed:
 
-| Tool                       | Purpose                                          |
-| -------------------------- | ------------------------------------------------ |
-| `get_news_for_symbol`      | Articles for a specific holding (ISIN/ticker).   |
-| `get_latest_news`          | Latest across all holdings in the account.       |
-| `list_news_sources`        | Inspect what's configured.                       |
-| `add_news_source`          | Add a new RSS feed (validates URL + interval).   |
-| `disable_news_source`      | Mute a noisy/broken feed.                        |
-| `refresh_news`             | Force an immediate poll of every enabled source. |
+| Tool                           | Purpose                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `get_news_for_symbol`          | Articles for a specific holding (ISIN/ticker).                           |
+| `get_latest_news`              | Latest across all holdings in the account.                               |
+| `list_news_sources`            | Inspect what's configured.                                               |
+| `add_news_source`              | Add a new RSS feed (validates URL + interval).                           |
+| `disable_news_source`          | Mute a noisy/broken feed.                                                |
+| `refresh_news`                 | Force an immediate poll of every enabled source.                         |
+| `record_decision`              | Record a user-stated investment intention (BUY/SELL/HOLD/REBALANCE) with user-picked `source` dimension. |
+| `list_decisions`               | List recorded decisions (filter by source/action/isin/since).            |
+| `evaluate_decision`            | On-demand return % + status against the per-action evaluation horizon.   |
+| `get_decision_track_record`    | Aggregate hit-rate per source dimension.                                 |
+| `link_decision_to_trade`       | Manually link a recorded decision to a real Trade row after a PDF import.|
 
-Adding a tool = a method in `Valyze.Mcp/Tools/NewsTools.cs` plus the
-allowlist in `tauri/src-tauri/src/claude_chat.rs`.
+Adding a news tool = a method in `Valyze.Mcp/Tools/NewsTools.cs` plus the
+allowlist in `tauri/src-tauri/src/claude_chat.rs`. Decision tools live in
+`Valyze.Mcp/Tools/DecisionTools.cs` (same allowlist pattern).
 
 ### Cost model
 
@@ -233,17 +266,53 @@ the Valyze DB**; the CLI keeps state in `~/.claude/sessions/` per chat UUID.
 
 #### Persona & mission
 
-The product mission ("democratize investing so beginners can act with real
-confidence, not bravado") is encoded in the MCP server's `ServerInstructions`
+The product mission ("allow someone with no investing background to put their
+money to work intelligently using the synthesis an AI can do across portfolio
++ news + market knowledge") is encoded in the MCP server's `ServerInstructions`
 — see `backend/src/Valyze.Mcp/Program.cs`. The assistant takes the role of
-a 15-year senior portfolio mentor whose job is to **teach the user to think
-about decisions**, not to make them. Hard guard-rails: no buy/sell directives,
-no price predictions, no leveraged-product recommendations to beginners,
-hard refusal of tax/legal advice with redirect to a qualified professional.
+the user's **investment co-pilot** — a 15-year market veteran dedicated to
+this one user, who **does give concrete recommendations** (specific tickers,
+ETFs, allocations, markets) with the reasoning attached. The user owns every
+decision; the AI's job is to make those decisions easy, well-reasoned, and
+actionable.
+
+The persona requires a one-shot **risk-profile bootstrap** at the first
+recommendation of each fresh chat: it pulls horizon + risk tolerance + goal
+from Engram if known, otherwise asks ONE compact question covering all three
+and saves the answer. Subsequent chats never re-ask.
+
+Hard refusals are kept to the bare minimum:
+1. Specific tax/legal numbers (general concepts OK).
+2. Promises of certainty / guaranteed returns.
+3. High-risk products (leverage, options, margin, futures) recommended
+   *proactively* to a self-identified beginner — those get an education
+   pass first.
+
+Pinpoint market timing ("entrá a 187") is NOT refused — it's converted to
+zone + condition ("la zona 185-190 tiene sentido por el soporte de marzo;
+si rompe 185 al cierre, esperaría 178"). Disclaimers ("not financial
+advice", "consult a professional") are NOT appended to responses.
 
 This persona lives at the MCP server (not Tauri's system prompt) so that
 ANY MCP-aware client — Valyze chat, terminal `claude`, Cursor, future tools —
 inherits the same character without per-client sync.
+
+#### Regulatory positioning
+
+The AI inference **always runs locally** on the user's own Claude
+subscription — Valyze provides portfolio + news context via MCP, the
+inference is theirs. This holds in personal mode AND in any future
+SaaS mode: if Valyze ever goes hosted, the SaaS sells orchestration and
+data, not AI advice. That keeps Valyze positioned as an MCP context
+provider rather than a robo-advisor under MiFID II.
+
+**Open compliance debt** to revisit before closed beta / public SaaS:
+the persona's tone (first-person, "yo movería…", concrete tickers) reads
+as personalised advice. In personal mode (single user = operator =
+beneficiary) this is unproblematic. For multi-user hosted distribution,
+review with counsel whether the local-inference framing is enough or
+whether marketing/UI copy needs to neutralise the perception. The persona
+itself is configurable per deploy if needed.
 
 #### Memory & continuity
 
@@ -300,7 +369,11 @@ mid-conversation.
 - `backend/src/Valyze.Mcp/` — the stdio MCP server. Console app, .NET 10,
   uses the official `ModelContextProtocol` SDK 1.2.x. Tools are
   `[McpServerTool]`-annotated methods registered automatically via
-  `WithToolsFromAssembly()`. Adding a tool = adding a method.
+  `WithToolsFromAssembly()`. Adding a tool = adding a method. Tool files:
+  `Tools/PortfolioTools.cs`, `Tools/NewsTools.cs`, `Tools/DecisionTools.cs`.
+  The `ServerInstructions` (in `Program.cs`) carries the decision-tracking
+  guardrails (source-confirmation, post-import link reminder, status
+  interpretation for `PENDING_HORIZON`).
 - `tauri/src-tauri/src/claude_chat.rs` — the bridge: builds a temp
   `mcp-config.json` per session, passes `--mcp-config <path>`,
   `--tools "WebSearch WebFetch"` (those two built-ins only — no Bash/Edit/Read),
@@ -364,15 +437,19 @@ tool automatically from `tools/list`.
 Minimal schema spine:
 
 ```
-accounts          (id, email, base_currency, created_at)        -- multi-tenancy root
-instruments       (isin PK, name, asset_class, quote_ccy, primary_exchange)
-instrument_tickers(isin, ticker, exchange)                       -- many per ISIN
-trades            (id, account_id, isin, side, quantity, price_amount, price_currency,
-                   fees_amount, fees_currency, executed_at)
-price_quotes      (isin, ts, price, ccy, source)                 -- shared cache
-fx_rates          (base, quote, ts, rate, source)                -- shared cache (ECB)
-snapshots         (account_id, ts, totals…, account_ccy)
-suggestions       (account_id, ts, prompt_text, prompt_version, tools_used, response_json, model_id)
+accounts             (id, email, base_currency, created_at)        -- multi-tenancy root
+instruments          (isin PK, name, asset_class, quote_ccy, primary_exchange)
+instrument_tickers   (isin, ticker, exchange)                       -- many per ISIN
+trades               (id, account_id, isin, side, quantity, price_amount, price_currency,
+                      fees_amount, fees_currency, executed_at)
+price_quotes         (isin, ts, price, ccy, source)                 -- shared cache
+fx_rates             (base, quote, ts, rate, source)                -- shared cache (ECB)
+snapshots            (account_id, ts, totals…, account_ccy)
+suggestions          (account_id, ts, prompt_text, prompt_version, tools_used, response_json, model_id)
+investment_decisions (id, account_id, source, action, isin?, ticker?, quantity_amount?,
+                      quantity_units?, price_at_decision_amount?, price_at_decision_currency?,
+                      rationale?, evaluation_horizon_days, ai_chat_session_id?,
+                      linked_trade_id?, source_other_note?, created_at, updated_at)
 ```
 
 All money columns: `numeric(28, 8)`. All currencies: ISO 4217 codes (3-char string). EF Core migrations live in `Valyze.Infraestructure.EntityFramework`.

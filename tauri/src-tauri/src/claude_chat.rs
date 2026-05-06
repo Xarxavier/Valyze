@@ -44,6 +44,12 @@ const VALYZE_MCP_TOOLS: &[&str] = &[
     "mcp__valyze__add_news_source",
     "mcp__valyze__disable_news_source",
     "mcp__valyze__refresh_news",
+    // Decision tracker
+    "mcp__valyze__record_decision",
+    "mcp__valyze__list_decisions",
+    "mcp__valyze__evaluate_decision",
+    "mcp__valyze__get_decision_track_record",
+    "mcp__valyze__link_decision_to_trade",
 ];
 
 /// Built-in Claude Code tools we do allow. WebSearch + WebFetch let the

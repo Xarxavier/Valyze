@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Valyze.Domain.Entities.Portfolio;
 using Valyze.Domain.Money;
 using Valyze.Domain.QueryService;
+using MoneyValue = Valyze.Domain.Money.Money;
 
 namespace Valyze.Infraestructure.QueryService.MarketData;
 
@@ -54,5 +55,35 @@ public class PriceQuoteQueryService : BaseQueryService, IPriceQuoteQueryService
             Source = r.Source,
             FetchedAt = new DateTimeOffset(DateTime.SpecifyKind(r.FetchedAt, DateTimeKind.Utc)),
         }).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<MoneyValue?> GetLatestForSymbolAsync(
+        string symbol,
+        CancellationToken cancellationToken = default)
+    {
+        using var connection = CreateConnection();
+
+        // Pick the single most-recently-fetched row for this symbol, across
+        // all currencies. DISTINCT ON guarantees we get exactly one row.
+        const string sql = @"
+            SELECT
+                symbol      AS Symbol,
+                currency    AS Currency,
+                amount      AS Amount,
+                source      AS Source,
+                fetched_at  AS FetchedAt
+            FROM price_quotes
+            WHERE UPPER(symbol) = UPPER(@Symbol)
+            ORDER BY fetched_at DESC
+            LIMIT 1;";
+
+        var row = await connection.QueryFirstOrDefaultAsync<QuoteRow>(sql, new
+        {
+            Symbol = symbol,
+        });
+
+        if (row is null) return null;
+        return new MoneyValue(row.Amount, new Currency(row.Currency));
     }
 }

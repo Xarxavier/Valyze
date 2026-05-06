@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddValyzeHost(builder.Configuration)
-    .AddValyzeApplication()
+    .AddValyzeApplication(builder.Configuration)
     .AddValyzeRepositories()
     .AddValyzeQueryServices()
     .AddValyzeEntityFramework(builder.Configuration)

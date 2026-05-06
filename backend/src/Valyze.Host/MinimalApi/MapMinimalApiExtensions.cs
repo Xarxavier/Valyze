@@ -1,5 +1,7 @@
 using Valyze.Host.MinimalApi.Auth;
+using Valyze.Host.MinimalApi.Decisions;
 using Valyze.Host.MinimalApi.Health;
+using Valyze.Host.MinimalApi.MarketData;
 using Valyze.Host.MinimalApi.News;
 using Valyze.Host.MinimalApi.Portfolio;
 using Valyze.Host.MinimalApi.Positions;
@@ -17,6 +19,8 @@ public static class MapMinimalApiExtensions
         app.MapPositionsEndpoints();
         app.MapTradesEndpoints();
         app.MapNewsEndpoints();
+        app.MapDecisionEndpoints();
+        app.MapMarketPriceEndpoints();
         return app;
     }
 }

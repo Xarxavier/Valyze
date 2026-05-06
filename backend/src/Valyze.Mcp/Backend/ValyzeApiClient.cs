@@ -143,6 +143,28 @@ public sealed class ValyzeApiClient : IDisposable
         return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// PATCH a JSON body (or no body) to the given path and return the
+    /// response payload as a JSON string. Empty 204 responses come back as
+    /// <c>"{}"</c> so tools can always parse what they get.
+    /// </summary>
+    public async Task<string> PatchJsonAsync(string path, string? body, CancellationToken cancellationToken)
+    {
+        await EnsureAuthenticatedAsync(cancellationToken).ConfigureAwait(false);
+
+        using var request = new HttpRequestMessage(HttpMethod.Patch, path);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+        if (!string.IsNullOrEmpty(body))
+        {
+            request.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+        }
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            return "{}";
+        return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task EnsureAuthenticatedAsync(CancellationToken cancellationToken)
     {
         if (!string.IsNullOrEmpty(_accessToken)) return;

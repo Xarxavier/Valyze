@@ -16,6 +16,8 @@ public sealed class ValyzeDbContext : DbContext
     public DbSet<NewsArticle> NewsArticles => Set<NewsArticle>();
     public DbSet<NewsArticleInstrument> NewsArticleInstruments => Set<NewsArticleInstrument>();
 
+    public DbSet<InvestmentDecision> InvestmentDecisions => Set<InvestmentDecision>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -25,5 +27,6 @@ public sealed class ValyzeDbContext : DbContext
         modelBuilder.ApplyConfiguration(new NewsSourceConfiguration());
         modelBuilder.ApplyConfiguration(new NewsArticleConfiguration());
         modelBuilder.ApplyConfiguration(new NewsArticleInstrumentConfiguration());
+        modelBuilder.ApplyConfiguration(new InvestmentDecisionConfiguration());
     }
 }

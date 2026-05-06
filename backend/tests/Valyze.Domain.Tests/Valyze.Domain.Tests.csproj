@@ -9,6 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Valyze.Domain\Valyze.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Valyze.Application\Valyze.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
