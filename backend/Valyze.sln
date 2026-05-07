@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Valyze.Mcp", "src\Valyze.Mc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Valyze.Infraestructure.News.Rss", "src\Valyze.Infraestructure.News.Rss\Valyze.Infraestructure.News.Rss.csproj", "{81EA25ED-993B-4225-B0E5-528006AA3AF5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Valyze.Application.Tests", "tests\Valyze.Application.Tests\Valyze.Application.Tests.csproj", "{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -213,6 +215,18 @@ Global
 		{81EA25ED-993B-4225-B0E5-528006AA3AF5}.Release|x64.Build.0 = Release|Any CPU
 		{81EA25ED-993B-4225-B0E5-528006AA3AF5}.Release|x86.ActiveCfg = Release|Any CPU
 		{81EA25ED-993B-4225-B0E5-528006AA3AF5}.Release|x86.Build.0 = Release|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Debug|x64.Build.0 = Debug|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Debug|x86.Build.0 = Debug|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Release|x64.ActiveCfg = Release|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Release|x64.Build.0 = Release|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Release|x86.ActiveCfg = Release|Any CPU
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -232,6 +246,7 @@ Global
 		{6A6A6A6A-6666-6666-6666-666666666666} = {BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB}
 		{2166263C-4B47-4448-B381-97C55ADEE4C1} = {AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
 		{81EA25ED-993B-4225-B0E5-528006AA3AF5} = {AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
+		{A1E46D25-34F3-4B69-9180-3E9E9260E6D7} = {BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC}

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Valyze.Domain.Repository;
+using Valyze.Infraestructure.Repository.Decisions;
 using Valyze.Infraestructure.Repository.Identity;
 using Valyze.Infraestructure.Repository.MarketData;
 using Valyze.Infraestructure.Repository.News;
@@ -16,6 +17,7 @@ public static class ServiceExtensions
         services.AddScoped<IPriceQuoteRepository, PriceQuoteRepository>();
         services.AddScoped<INewsSourceRepository, NewsSourceRepository>();
         services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
+        services.AddScoped<IInvestmentDecisionRepository, InvestmentDecisionRepository>();
         return services;
     }
 }

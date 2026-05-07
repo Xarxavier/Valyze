@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Valyze.Domain.QueryService;
+using Valyze.Infraestructure.QueryService.Decisions;
 using Valyze.Infraestructure.QueryService.MarketData;
 using Valyze.Infraestructure.QueryService.News;
 using Valyze.Infraestructure.QueryService.Portfolio;
@@ -15,6 +16,7 @@ public static class ServiceExtensions
         services.AddScoped<IPriceQuoteQueryService, PriceQuoteQueryService>();
         services.AddScoped<INewsSourceQueryService, NewsSourceQueryService>();
         services.AddScoped<INewsArticleQueryService, NewsArticleQueryService>();
+        services.AddScoped<IInvestmentDecisionQueryService, InvestmentDecisionQueryService>();
         return services;
     }
 }

@@ -53,6 +53,105 @@ namespace Valyze.Infraestructure.EntityFramework.Migrations
                     b.ToTable("accounts", (string)null);
                 });
 
+            modelBuilder.Entity("Valyze.Infraestructure.EntityFramework.Entities.InvestmentDecision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("account_id");
+
+                    b.Property<short>("Action")
+                        .HasColumnType("smallint")
+                        .HasColumnName("action");
+
+                    b.Property<Guid?>("AiChatSessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("ai_chat_session_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("EvaluationHorizonDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("evaluation_horizon_days");
+
+                    b.Property<string>("Isin")
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("isin");
+
+                    b.Property<Guid?>("LinkedTradeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("linked_trade_id");
+
+                    b.Property<decimal?>("PriceAtDecisionAmount")
+                        .HasColumnType("numeric(28, 8)")
+                        .HasColumnName("price_at_decision_amount");
+
+                    b.Property<string>("PriceAtDecisionCurrency")
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("price_at_decision_currency");
+
+                    b.Property<decimal?>("QuantityAmount")
+                        .HasColumnType("numeric(28, 8)")
+                        .HasColumnName("quantity_amount");
+
+                    b.Property<string>("QuantityCurrency")
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("quantity_currency");
+
+                    b.Property<short>("QuantityUnits")
+                        .HasColumnType("smallint")
+                        .HasColumnName("quantity_units");
+
+                    b.Property<string>("Rationale")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("rationale");
+
+                    b.Property<short>("Source")
+                        .HasColumnType("smallint")
+                        .HasColumnName("source");
+
+                    b.Property<string>("SourceOtherNote")
+                        .HasColumnType("text")
+                        .HasColumnName("source_other_note");
+
+                    b.Property<string>("Ticker")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("ticker");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LinkedTradeId")
+                        .HasDatabaseName("ix_investment_decisions_linked_trade_id")
+                        .HasFilter("\"linked_trade_id\" IS NOT NULL");
+
+                    b.HasIndex("AccountId", "CreatedAt")
+                        .HasDatabaseName("ix_investment_decisions_account_created_at");
+
+                    b.HasIndex("AccountId", "Isin")
+                        .HasDatabaseName("ix_investment_decisions_account_isin")
+                        .HasFilter("\"isin\" IS NOT NULL");
+
+                    b.HasIndex("AccountId", "Source", "Action", "CreatedAt")
+                        .HasDatabaseName("ix_investment_decisions_account_source_action_created_at");
+
+                    b.ToTable("investment_decisions", (string)null);
+                });
+
             modelBuilder.Entity("Valyze.Infraestructure.EntityFramework.Entities.NewsArticle", b =>
                 {
                     b.Property<Guid>("Id")
@@ -306,6 +405,20 @@ namespace Valyze.Infraestructure.EntityFramework.Migrations
                         .HasFilter("\"broker_reference\" IS NOT NULL");
 
                     b.ToTable("trades", (string)null);
+                });
+
+            modelBuilder.Entity("Valyze.Infraestructure.EntityFramework.Entities.InvestmentDecision", b =>
+                {
+                    b.HasOne("Valyze.Infraestructure.EntityFramework.Entities.Account", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Valyze.Infraestructure.EntityFramework.Entities.Trade", null)
+                        .WithMany()
+                        .HasForeignKey("LinkedTradeId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Valyze.Infraestructure.EntityFramework.Entities.NewsArticle", b =>
